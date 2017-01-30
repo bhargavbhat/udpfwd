@@ -4,6 +4,8 @@
 #include<arpa/inet.h>
 #include<string.h>
 
+//#define VERBOSE
+
 // socket parameters
 static const char* localport   = "5080";
 static const char* remoteip    = "127.0.0.1";
@@ -11,6 +13,13 @@ static const char* remoteport  = "6070";
 
 // max UDP message size
 static const unsigned long BUF_SIZ = 128;
+
+// print message contents only if VERBOSE is defined
+#ifdef VERBOSE
+    #define PRINTBUF printbuf
+#else
+    #define PRINTBUF(...) 
+#endif
 
 // helper to print IP and port given sockaddr
 void printaddr(const char* msg, const struct sockaddr_in* sock)
@@ -91,9 +100,6 @@ int main()
         if((ret=recvfrom(sockfd, buf, BUF_SIZ, 0, (struct sockaddr *)&rcvsck, &siz)) < 0)
             die("recvfrom()\n");
 
-        printaddr("RECV", &rcvsck);
-        printbuf("MESG", buf, ret);
-
         // check who the sender is
         if(rcvsck.sin_addr.s_addr==rem.sin_addr.s_addr && rcvsck.sin_port==rem.sin_port)
         {
@@ -104,12 +110,12 @@ int main()
             if(!is_addr_stored)
             {
                 printaddr("NOT STORED", &rcvsck);
-                printbuf("MESG", buf, ret);
+                PRINTBUF("MESG", buf, ret);
                 continue;
             }
 
-            printaddr("STOR", &stor);
-            printbuf("MESG", buf, ret);
+            printaddr("R->S", &stor);
+            PRINTBUF("MESG", buf, ret);
             sendto(sockfd, buf, ret, 0, (struct sockaddr *)&stor, sizeof(stor));
         }
         else 
@@ -126,8 +132,8 @@ int main()
 
                 is_addr_stored = 1;
             }
-            printaddr("SEND", &rem);
-            printbuf("MESG", buf, ret);
+            printaddr("C->R", &rem);
+            PRINTBUF("MESG", buf, ret);
             sendto(sockfd, buf, ret, 0, (struct sockaddr *)&rem, sizeof(rem));
         }
     }
