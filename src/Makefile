@@ -11,3 +11,6 @@ udpfwd: udpfwd.c
 
 clean:
 	@rm -f udpfwd *.a *.o
+
+test:
+	../test/test_fwd.sh
