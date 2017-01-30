@@ -1,5 +1,5 @@
 GCC = gcc
-CFLAGS = -O3
+CFLAGS = -Wall -Wextra -Wpedantic -Werror -O3
 STRIP = strip -s
 TARGET = udpfwd
 
