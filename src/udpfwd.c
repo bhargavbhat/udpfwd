@@ -7,6 +7,7 @@
 //#define VERBOSE
 
 // socket parameters
+static const char* localip     = "127.0.0.1";
 static const char* localport   = "5080";
 static const char* remoteip    = "127.0.0.1";
 static const char* remoteport  = "6070";
@@ -53,7 +54,7 @@ void printbuf(const char* msg, const char* buf, const unsigned int len)
 void die(const char* msg)
 {
     printf("%s", msg);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 int main()
@@ -67,7 +68,7 @@ int main()
     // local socket
     struct sockaddr_in loc  = {0};
     loc.sin_family          = AF_INET;
-    loc.sin_addr.s_addr     = htonl(INADDR_ANY);
+    loc.sin_addr.s_addr     = inet_addr(localip);
     loc.sin_port            = htons(atoi(localport));
 
     // var for storing socket params of
@@ -77,7 +78,7 @@ int main()
 
     // create socket
     int sockfd = -1;
-    if((sockfd =socket(PF_INET, SOCK_DGRAM, 0)) == -1)
+    if((sockfd =socket(AF_INET, SOCK_DGRAM, 0)) == -1)
         die("socket()\n");
     
     // bind to local port
@@ -101,7 +102,8 @@ int main()
             die("recvfrom()\n");
 
         // check who the sender is
-        if(rcvsck.sin_addr.s_addr==rem.sin_addr.s_addr && rcvsck.sin_port==rem.sin_port)
+        if(rcvsck.sin_addr.s_addr == rem.sin_addr.s_addr 
+                && rcvsck.sin_port == rem.sin_port)
         {
             // control reaches here when sender is the remote end
             // forward the packet to the client, this is possible
@@ -113,7 +115,6 @@ int main()
                 PRINTBUF("MESG", buf, ret);
                 continue;
             }
-
             printaddr("R->S", &stor);
             PRINTBUF("MESG", buf, ret);
             sendto(sockfd, buf, ret, 0, (struct sockaddr *)&stor, sizeof(stor));
@@ -125,11 +126,9 @@ int main()
                 // control reaches here when the client sends the
                 // first message out to the remote end, need to 
                 // store the client endpoint paramters at this stage
-
                 printaddr("STORING", &rcvsck);
                 stor.sin_addr = rcvsck.sin_addr;
                 stor.sin_port = rcvsck.sin_port;
-
                 is_addr_stored = 1;
             }
             printaddr("C->R", &rem);
