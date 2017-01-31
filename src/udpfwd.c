@@ -6,12 +6,6 @@
 
 //#define VERBOSE
 
-// socket parameters
-static const char* localip     = "127.0.0.1";
-static const char* localport   = "5080";
-static const char* remoteip    = "127.0.0.1";
-static const char* remoteport  = "6070";
-
 // max UDP message size
 static const unsigned long BUF_SIZ = 128;
 
@@ -27,10 +21,8 @@ void printaddr(const char* msg, const struct sockaddr_in* sock)
 {
     if(!sock)
         return;
-
     if(msg)
         printf("%s ", msg);
-
     printf("ADDR: %s \tPORT: %d\n", inet_ntoa(sock->sin_addr), 
             (int) ntohs(sock->sin_port));
 }
@@ -40,13 +32,10 @@ void printbuf(const char* msg, const char* buf, const unsigned int len)
 {
     if(!buf || len == 0)
         return;
-
     if(msg)
         printf("%s ", msg);
-
     for(unsigned int i =0; i < len; ++i)
         printf("0x%02x ", (int) buf[i]);
-    
     printf("\n");
 }
 
@@ -57,8 +46,19 @@ void die(const char* msg)
     exit(EXIT_FAILURE);
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    // check command line params
+    if(argc != 4)
+        die("Usage  : udpfwd localport remoteip remoteport\n"
+            "Example: udpfwd 3040 11.22.33.44 5566\n");
+
+    // socket parameters
+    const char* localip     = "127.0.0.1";
+    const char* localport   = argv[1];
+    const char* remoteip    = argv[2];
+    const char* remoteport  = argv[3];
+
     // remote (final destn.) socket
     struct sockaddr_in rem  = {0};
     rem.sin_family          = AF_INET;
@@ -71,15 +71,20 @@ int main()
     loc.sin_addr.s_addr     = inet_addr(localip);
     loc.sin_port            = htons(atoi(localport));
 
-    // var for storing socket params of
-    // the first message sent
+    // for storing client socket params
     struct sockaddr_in stor = {0};
     char is_addr_stored     = 0;
 
     // create socket
     int sockfd = -1;
-    if((sockfd =socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
         die("socket()\n");
+
+    // set reuse address option (allow port reuse without delay)
+    int enable = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 
+                (char *)&enable, sizeof(enable)) < 0)
+        die("setsockopt()\n");
     
     // bind to local port
     if(bind(sockfd, (struct sockaddr *)&loc, sizeof(loc)))
@@ -98,7 +103,8 @@ int main()
         int ret = 0;
 
         // attempt to receive some data
-        if((ret=recvfrom(sockfd, buf, BUF_SIZ, 0, (struct sockaddr *)&rcvsck, &siz)) < 0)
+        if((ret=recvfrom(sockfd, buf, BUF_SIZ, 0, 
+                        (struct sockaddr *)&rcvsck, &siz)) < 0)
             die("recvfrom()\n");
 
         // check who the sender is
