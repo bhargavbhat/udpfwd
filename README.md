@@ -1,10 +1,14 @@
 # udpfwd
 Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to another destination
 
-### Building
-- To build, clone the repo and run: `cd src && make` 
+### Clone & Build
+```
+git clone https://github.com/bhargavbhat/udpfwd.git
+cd udpfwd/src
+make
+```
 
-### Running
+### Run
 `udpfwd` REQUIRES three command-line arguments (in following order) to run:
 
 - `localport` : Port to listen on the local machine. Relay binds to the `127.0.0.1` interface
@@ -13,7 +17,7 @@ Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to a
 
 Hence complete invocation to run `udpfwd` is  `./udpfwd 5080 127.0.0.1 6070`. This will cause the program to listen for traffic on `127.0.0.1:5080` and forward all messages received to `127.0.0.1:6070`
 
-### Console Logs
+### Console Logs Explained
 
 - `LISN ADDR: 0.0.0.0 	PORT: 5080`
     * Printed just as the program starts-up
@@ -36,7 +40,7 @@ Hence complete invocation to run `udpfwd` is  `./udpfwd 5080 127.0.0.1 6070`. Th
   * In case of runtime errors, the program will print a short message (eg: `bind` -> Unable to bind to given port) and quit
   * In case sufficient arguments are not provided, a brief help message is printed and the program terminates 
   
-### Testing
+### Test Scripts
 The 3 scripts in `test` folder can be used to perform testing:
 
 - `test_server.sh` uses `socat` to create a simple UDP server which echoes back whatever is sent to it
@@ -51,5 +55,5 @@ The 3 scripts in `test` folder can be used to perform testing:
 - Max. message size is fixed to `128` (can be changed in source code)
 - UDP payload can be logged to console by defining `VERBOSE` and recompiling
 
-### Dependencies
-Requires `netcat` and `socat` for testing
+### External Dependencies
+- Requires `netcat` and `socat` for test scripts
