@@ -2,6 +2,9 @@
 Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to another destination
 
 ### Clone & Build
+
+[![Build Status](https://travis-ci.org/bhargavbhat/udpfwd.svg?branch=master)](https://travis-ci.org/bhargavbhat/udpfwd)
+
 ```
 git clone https://github.com/bhargavbhat/udpfwd.git
 cd udpfwd/src
