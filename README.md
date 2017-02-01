@@ -37,7 +37,12 @@ Hence complete invocation to run `udpfwd` is  `./udpfwd 5080 127.0.0.1 6070`. Th
 - `R->S ADDR: 127.0.0.1 	PORT: 49427`
     * Printed when message from Remote server (`R`) is sent to the Stored client (`S`)
     * IP and Port of stored client is printed as well (`ADDR: 127.0.0.1 	PORT: 49427`)
-   
+    
+- `K->R ADDR: 127.0.0.1 	PORT: 6070`
+    * Printed when a KeepAlive message (`K`) is sent to the Remote server (`R`)
+    * IP and Port of remote server is printed as well (`ADDR: 127.0.0.1 	PORT: 6070`)
+    * Works only when KeepAlive messages are enabled
+    
 - Misc Logs/Messages:
   * If `VERBOSE` is defined, contents of UDP payload are logged (in both direction), eg: `MESG 0x31 0x32 0x33 0x0a`
   * In case of runtime errors, the program will print a short message (eg: `bind` -> Unable to bind to given port) and quit
@@ -57,6 +62,7 @@ The 3 scripts in `test` folder can be used to perform testing:
 - Requires IPv4 Addresses (name resolution & IPv6 support not implemented)
 - Max. message size is fixed to `128` (can be changed in source code)
 - UDP payload can be logged to console by defining `VERBOSE` and recompiling
+- UDP KeepAlive messages (empty UDP packet with len=0) sent to server are supported. The Timeout value between packets can be adjusted in source code. A Timeout of `0` disables this feature. Contents of the KeepAlive message can be customized in code as well
 
 ### External Dependencies
 - Requires `netcat` and `socat` for test scripts
