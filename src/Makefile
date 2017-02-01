@@ -5,7 +5,7 @@ TARGET = udpfwd
 
 all: udpfwd
 
-udpfwd: udpfwd.c
+udpfwd: udpfwd.c udpfwd.h
 	$(GCC) $(CFLAGS) udpfwd.c -o $(TARGET)
 	$(STRIP) $(TARGET)
 
