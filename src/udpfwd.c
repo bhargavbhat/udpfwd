@@ -1,50 +1,4 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<sys/socket.h>
-#include<arpa/inet.h>
-#include<string.h>
-
-//#define VERBOSE
-
-// max UDP message size
-static const unsigned long BUF_SIZ = 128;
-
-// print message contents only if VERBOSE is defined
-#ifdef VERBOSE
-    #define PRINTBUF printbuf
-#else
-    #define PRINTBUF(...) 
-#endif
-
-// helper to print IP and port given sockaddr
-void printaddr(const char* msg, const struct sockaddr_in* sock)
-{
-    if(!sock)
-        return;
-    if(msg)
-        printf("%s ", msg);
-    printf("ADDR: %s \tPORT: %d\n", inet_ntoa(sock->sin_addr), 
-            (int) ntohs(sock->sin_port));
-}
-
-// helper to print buffer as hex bytes
-void printbuf(const char* msg, const char* buf, const unsigned int len)
-{
-    if(!buf || len == 0)
-        return;
-    if(msg)
-        printf("%s ", msg);
-    for(unsigned int i =0; i < len; ++i)
-        printf("0x%02x ", (int) buf[i]);
-    printf("\n");
-}
-
-// helper to print error and quit
-void die(const char* msg)
-{
-    printf("%s", msg);
-    exit(EXIT_FAILURE);
-}
+#include "udpfwd.h"
 
 int main(int argc, char** argv)
 {
@@ -84,8 +38,19 @@ int main(int argc, char** argv)
     int enable = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 
                 (char *)&enable, sizeof(enable)) < 0)
-        die("setsockopt()\n");
-    
+        die("setsockopt(SO_REUSEADDR)\n");
+
+    // set socket recv timeout (for use with KEEPALIVE feature)
+    // SO_KEEPALIVE exists, yes, but it is to be used with TCP only
+    // Here KEEPALIVE is implemented "by hand" using recvfrom with timeout
+    // and sending a KEEPALIVE packet before going back to listening
+    struct timeval tv;
+    tv.tv_sec = KEEPALIVE_TIMEOUT;
+    tv.tv_usec = 0;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,
+                &tv, sizeof(tv)) < 0)
+        die("setsockopt(SO_RCVTIMEO)\n");
+
     // bind to local port
     if(bind(sockfd, (struct sockaddr *)&loc, sizeof(loc)))
         die("bind()\n");
@@ -105,7 +70,24 @@ int main(int argc, char** argv)
         // attempt to receive some data
         if((ret=recvfrom(sockfd, buf, BUF_SIZ, 0, 
                         (struct sockaddr *)&rcvsck, &siz)) < 0)
-            die("recvfrom()\n");
+        {
+            // control reaches here when "recvfrom()" timeout or error 
+            if( KEEPALIVE_TIMEOUT != 0)
+            {
+                // timeout case : send KEEPALIVE packet to server
+                printaddr("K->R", &rem);
+                sendto(sockfd, KEEPALIVE_PACKET, KEEPALIVE_PACKET_LEN, 
+                        0, (struct sockaddr *)&rem, sizeof(rem));
+
+                // ... and go back to listening for real messages
+                continue;
+            }
+            else
+            {
+                // error case : terminate
+                die("recvfrom()\n");
+            }
+        }
 
         // check who the sender is
         if(rcvsck.sin_addr.s_addr == rem.sin_addr.s_addr 
