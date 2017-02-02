@@ -1,5 +1,5 @@
 # udpfwd
-Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to another destination
+Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to another destination. Support IPv4 as well as IPv6 (AF independent implementation).
 
 ### Clone & Build
 
@@ -14,11 +14,12 @@ make
 ### Run
 `udpfwd` REQUIRES three command-line arguments (in following order) to run:
 
-- `localport` : Port to listen on the local machine. Relay binds to the `127.0.0.1` interface
-- `remoteip`  : IPv4 address of the remote server (can be `127.0.0.1` as well)
+- `localip`   : Address (interface) of local machine to bind on, eg: `127.0.0.1` or `::1`
+- `localport` : Port to listen on the local machine.
+- `remoteip`  : IPv4 address of the remote server (can be `127.0.0.1` or `::1` as well)
 - `remoteport`: Port number of the remote server
 
-Hence complete invocation to run `udpfwd` is  `./udpfwd 5080 127.0.0.1 6070`. This will cause the program to listen for traffic on `127.0.0.1:5080` and forward all messages received to `127.0.0.1:6070`
+Hence complete invocation to run `udpfwd` is  `./udpfwd 127.0.0.1 5080 127.0.0.1 6070`. This will cause the program to listen for traffic on `127.0.0.1:5080` and forward all messages received to `127.0.0.1:6070`
 
 ### Console Logs Explained
 
@@ -57,9 +58,10 @@ The 3 scripts in `test` folder can be used to perform testing:
 
 `netcat` can also be used to start an interactive server (user can type in responses) rather than a simple echo server. This `netcat` test server can be via the script `test_nc_server.sh` present in the `test` folder.
 
+Test scripts accept a single command-line paramter, which when set to `6` causes the client/server to start with `UDP6` 
+
 ### Assumptions, Limitations & Notes
 - Key Assumption is that client initiates communication and therefore the client socket params can be saved when the first message is received. The saved socket params will be used as the destination for server replies (i.e. messages sent by server to `udpfwd`).
-- Requires IPv4 Addresses (name resolution & IPv6 support not implemented)
 - Max. message size is fixed to `128` (can be changed in source code)
 - UDP payload can be logged to console by defining `VERBOSE` and recompiling
 - UDP KeepAlive messages (empty UDP packet with len=0) sent to server are supported. The Timeout value between packets can be adjusted in source code. A Timeout of `0` disables this feature. Contents of the KeepAlive message can be customized in code as well
