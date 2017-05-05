@@ -3,6 +3,7 @@ Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to a
 
 ### Clone & Build
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/103abd5951734562b8624def54697e4f)](https://www.codacy.com/app/bhargavbhat/udpfwd?utm_source=github.com&utm_medium=referral&utm_content=bhargavbhat/udpfwd&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/bhargavbhat/udpfwd.svg?branch=master)](https://travis-ci.org/bhargavbhat/udpfwd)
 
 ```
