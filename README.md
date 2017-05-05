@@ -1,10 +1,10 @@
 # udpfwd
+[![Build Status](https://travis-ci.org/bhargavbhat/udpfwd.svg?branch=master)](https://travis-ci.org/bhargavbhat/udpfwd)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/103abd5951734562b8624def54697e4f)](https://www.codacy.com/app/bhargavbhat/udpfwd)
+
 Simple UDP Relay/Passthru/Forwarder that transparently forwards UDP traffic to another destination. Support IPv4 as well as IPv6 (AF independent implementation).
 
 ### Clone & Build
-
-[![Build Status](https://travis-ci.org/bhargavbhat/udpfwd.svg?branch=master)](https://travis-ci.org/bhargavbhat/udpfwd)
-
 ```
 git clone https://github.com/bhargavbhat/udpfwd.git
 cd udpfwd/src
